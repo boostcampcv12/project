@@ -1,5 +1,48 @@
 import torch
 import torch.nn as nn
+from Resnetblock import ResnetBlock
+
+
+def define_part_encoder(model='mouth', norm='instance', input_nc=1, latent_dim=512):
+    norm_layer = get_norm_layer(norm_type=norm)
+    image_size = 512
+    if 'eye' in model:
+        image_size = 128
+    elif 'mouth' in model:
+        image_size = 192
+    elif 'nose' in model:
+        image_size = 160
+    elif 'face' in model:
+        image_size = 512
+
+    # input longsize 256 to 512*4*4
+    net_encoder = CE_EncoderGen_Res(
+        norm_layer, image_size, input_nc, latent_dim)
+    print("net_encoder of part "+model+" is:", image_size)
+
+    return net_encoder
+
+
+def define_part_decoder(model='mouth', norm='instance', output_nc=1, latent_dim=512):
+    norm_layer = get_norm_layer(norm_type=norm)
+
+    image_size = 512
+    if 'eye' in model:
+        image_size = 128
+    elif 'mouth' in model:
+        image_size = 192
+    elif 'nose' in model:
+        image_size = 160
+    else:
+        print("Whole Image !!")
+
+    # input longsize 256 to 512*4*4
+    net_decoder = CE_DecoderGen_Res(
+        norm_layer, image_size, output_nc, latent_dim)
+
+    print("net_decoder to image of part "+model+" is:", image_size)
+
+    return net_decoder
 
 
 class CE_EncoderGen_Res(nn.Module):
@@ -166,42 +209,12 @@ class CE_DecoderGen_Res(nn.Moudule):
         return self.convtr6_3(h)
 
 
-class ResnetBlock(nn.Module):
-    def __init__(self, dim, padding_type, norm_layer, activation=nn.ReLU(True), use_dropout=False):
-        super(ResnetBlock, self).__init__()
-        self.conv_block = self.build_conv_block(
-            dim, padding_type, norm_layer, activation, use_dropout)
-
-    def build_conv_block(self, dim, padding_type, norm_layer, activation, use_dropout):
-        conv_block = []
-        p = 0
-        if (padding_type == 'reflect'):
-            conv_block += [nn.ReflectionPad2d(1)]
-        elif (padding_type == 'replicate'):
-            conv_block += [nn.ReplicationPad2d(1)]
-        elif (padding_type == 'zero'):
-            p = 1
-        else:
-            raise NotImplementedError(
-                ('padding [%s] is not implemented' % padding_type))
-        conv_block += [nn.Conv(dim, dim, 3, padding=p),
-                       norm_layer(dim), activation]
-        if use_dropout:
-            conv_block += [nn.Dropout(0.5)]
-
-        p = 0
-        if (padding_type == 'reflect'):
-            conv_block += [nn.ReflectionPad2d(1)]
-        elif (padding_type == 'replicate'):
-            conv_block += [nn.ReplicationPad2d(1)]
-        elif (padding_type == 'zero'):
-            p = 1
-        else:
-            raise NotImplementedError(
-                ('padding [%s] is not implemented' % padding_type))
-        conv_block += [nn.Conv(dim, dim, 3, padding=p), norm_layer(dim)]
-        return nn.Sequential(*conv_block)
-
-    def forward(self, x):
-        out = (x + self.conv_block(x))
-        return out
+def get_norm_layer(norm_type='instance'):
+    if (norm_type == 'batch'):
+        norm_layer = nn.BatchNorm
+    elif (norm_type == 'instance'):
+        norm_layer = nn.InstanceNorm2d
+    else:
+        raise NotImplementedError(
+            ('normalization layer [%s] is not found' % norm_type))
+    return norm_layer
