@@ -2,9 +2,9 @@ import torch
 import torch.nn as nn
 
 
-class EncoderGen_Res(nn.Module):
+class CE_EncoderGen_Res(nn.Module):
     def __init__(self, norm_layer, image_size, input_nc, latent_dim=512):
-        super(EncoderGen_Res, self).__init__()
+        super(CE_EncoderGen_Res, self).__init__()
 
         self.norm_layer = norm_layer
         self.image_size = image_size
@@ -76,9 +76,9 @@ class EncoderGen_Res(nn.Module):
         return self.fc(h)
 
 
-class DecoderGen_Res(nn.Moudule):
+class CE_DecoderGen_Res(nn.Moudule):
     def __init__(self, norm_layer, image_size, output_nc, latent_dim=512):
-        super(DecoderGen_Res, self).__init__()
+        super(CE_DecoderGen_Res, self).__init__()
         self.norm_layer = norm_layer
         self.image_size = image_size
         self.input_nc = output_nc
