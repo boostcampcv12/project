@@ -41,3 +41,25 @@ class ResnetBlock(nn.Module):
     def forward(self, x):
         out = (x + self.conv_block(x))
         return out
+
+
+def Conv2D_Block(in_channels, out_channels, kernel_size, padding, stride):
+    return nn.Sequential(nn.Conv2d(in_channels=in_channels,
+                                   out_channels=out_channels,
+                                   kernel_size=kernel_size,
+                                   stride=stride,
+                                   padding=padding),
+                         nn.BatchNorm2d(out_channels),
+                         nn.LeakyReLU
+                         )
+
+
+def ConvTrans2D_Block(in_channels, out_channels, kernel_size, padding, stride):
+    return nn.Sequential(nn.ConvTranspose2d(in_channels=in_channels,
+                                            out_channels=out_channels,
+                                            kernel_size=kernel_size,
+                                            stride=stride,
+                                            padding=padding),
+                         nn.BatchNorm2d(out_channels),
+                         nn.LeakyReLU
+                         )

@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from Resnetblock import ResnetBlock
+from Block import ResnetBlock, Conv2D_Block, ConvTrans2D_Block
 
 
 def define_part_encoder(model='mouth', norm='instance', input_nc=1, latent_dim=512):
@@ -61,16 +61,6 @@ class CE_EncoderGen_Res(nn.Module):
         activation = nn.ReLU()
         padding_type = 'reflect'
         norm_layer = nn.BatchNorm
-
-        def Conv2D_Block(in_channels, out_channels, kernel_size, padding, stride):
-            return nn.Sequential(nn.Conv2d(in_channels=in_channels,
-                                           out_channels=out_channels,
-                                           kernel_size=kernel_size,
-                                           stride=stride,
-                                           padding=padding),
-                                 nn.BatchNorm2d(out_channels),
-                                 nn.LeakyReLU
-                                 )
 
         # conv1
         self.conv1_1 = Conv2D_Block(self.input_nc, 32, 4, 1, 2)
@@ -135,25 +125,6 @@ class CE_DecoderGen_Res(nn.Moudule):
         padding_type = 'reflect'
         norm_layer = nn.BatchNorm
 
-        def ConvTrans2D_Block(in_channels, out_channels, kernel_size, padding, stride):
-            return nn.Sequential(nn.ConvTranspose2d(in_channels=in_channels,
-                                                    out_channels=out_channels,
-                                                    kernel_size=kernel_size,
-                                                    stride=stride,
-                                                    padding=padding),
-                                 nn.BatchNorm2d(out_channels),
-                                 nn.LeakyReLU
-                                 )
-
-        def Conv2D_Block(in_channels, out_channels, kernel_size, padding, stride):
-            return nn.Sequential(nn.Conv2d(in_channels=in_channels,
-                                           out_channels=out_channels,
-                                           kernel_size=kernel_size,
-                                           stride=stride,
-                                           padding=padding),
-                                 nn.BatchNorm2d(out_channels),
-                                 nn.LeakyReLU
-                                 )
         # fc
         self.fc = nn.Linear(in_features=latent_dim, out_features=longsize)
 
