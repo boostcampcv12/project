@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 from Block import ResnetBlock
+from utils import weight_init_normal
 
 
 class GlobalGenerator(nn.Module):
@@ -33,7 +34,7 @@ class GlobalGenerator(nn.Module):
         self.model = nn.Sequential(*model)
 
         for m in self.modules():
-            weights_init_normal(m)
+            weight_init_normal(m)
 
     def execute(self, input):
         return self.model(input)

@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 from Block import ResnetBlock, ConvTrans2D_Block
+from utils import weight_init_normal
 
 
 class FMModule(nn.Module):
@@ -49,6 +50,9 @@ class FMModule(nn.Module):
         self.pad_2 = nn.ReflectionPad2d(2)
 
         self.convtr_last = ConvTrans2D_Block(64, output_nc, 5, 0, 2)
+
+        for m in self.modules():
+            weight_init_normal(m)
 
     def forward(self, x):
         h = self.convtr1_1(x)

@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 from Block import ResnetBlock, Conv2D_Block, ConvTrans2D_Block
+from utils import weight_init_normal
 
 
 def define_part_encoder(model='mouth', norm='instance', input_nc=1, latent_dim=512):
@@ -90,6 +91,9 @@ class CE_EncoderGen_Res(nn.Module):
         # Fully connected layer
         self.fc = nn.Linear(in_features=longsize, out_features=latent_dim)
 
+        for m in self.modules():
+            weights_init_normal(m)
+
     def forward(self, x):
         h = self.conv1_1(x)
         h = self.conv1_2(h)
@@ -158,6 +162,9 @@ class CE_DecoderGen_Res(nn.Moudule):
             32, padding_type=padding_type, activation=activation, norm_layer=norm_layer)
         self.convtr6_2 = nn.ReflectionPad2d(2)
         self.convtr6_3 = Conv2D_Block(32, output_nc, kernel_size=5, padding=0)
+
+        for m in self.modules():
+            weight_init_normal(m)
 
     def forward(self, x):
         h = self.convtr1_1(x)
