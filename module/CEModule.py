@@ -92,7 +92,7 @@ class CE_EncoderGen_Res(nn.Module):
         self.fc = nn.Linear(in_features=longsize, out_features=latent_dim)
 
         for m in self.modules():
-            weights_init_normal(m)
+            weight_init_normal(m)
 
     def forward(self, x):
         h = self.conv1_1(x)
