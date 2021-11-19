@@ -5,11 +5,13 @@ from PIL import Image
 
 
 class CustomDataset(Dataset):
-    def __init__(self, data_dir, part, mode):
+    def __init__(self, data_dir, part, mode, transform=None):
         super().__init__()
         self.data_dir = data_dir
         self.part = part
         self.mode = mode
+        self.transform = transform
+
         patch_size = {"left_eye": 128,
                       "right_eye": 128, "mouth": 192, "nose": 160, "face": 512}
         self.patch_size = patch_size[part]
@@ -37,8 +39,12 @@ class CustomDataset(Dataset):
                   points[3][1]-80:points[0][1]+80] = 0
 
             patch_image = image
+            patch_image_trans = patch_image
 
-        return patch_image
+        if self.transform is not None:
+            patch_image_trans = self.transform(patch_image)
+
+        return patch_image, patch_image_trans
 
     def setup(self, part, mode):
         json_path = os.path.join(self.data_dir, f"{mode}.json")

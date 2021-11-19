@@ -9,6 +9,7 @@ import argparse
 import os
 from dataset import CustomDataset
 import multiprocessing
+from albumentations.augmentations.transforms import GaussNoise
 
 
 def seed_everything(seed):
@@ -35,7 +36,7 @@ def train(encoder, decoder, args):
 
     # -- dataset, data loader -> 각 part 에 맞는 sketch를 잘라서 받아온다.
     train_dataset = CustomDataset(
-        data_dir=args.sketch_dir, part=args.part, mode="train")
+        data_dir=args.sketch_dir, part=args.part, mode="train", transform=GaussNoise(var_limit=(0, 1), mean=0.5, per_channel=True, always_apply=False, p=0.5))
     val_dataset = CustomDataset(
         data_dir=args.sketch_dir, part=args.part, mode="val")
 
@@ -59,13 +60,14 @@ def train(encoder, decoder, args):
         decoder.train()
         loss_value = 0
 
-        for inputs in train_loader:
+        for results, inputs in train_loader:
             inputs = inputs.to(device)
+            results = results.to(device)
             optimizer.zero_grad()
             outs = encoder(inputs)
             outs = decoder(outs)
 
-            loss = critetrion(outs, inputs)
+            loss = critetrion(outs, results)
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -81,11 +83,12 @@ def train(encoder, decoder, args):
             total_loss = 0.0
             cnt = 0
 
-            for inputs in val_loader:
+            for results, inputs in val_loader:
                 inputs = inputs.to(device)
+                results = results.to(device)
                 outs = encoder(inputs)
                 outs = decoder(outs)
-                loss = critetrion(inputs, outs)
+                loss = critetrion(outs, results)
                 total_loss += loss
                 cnt += 1
 
