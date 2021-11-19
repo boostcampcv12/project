@@ -7,6 +7,7 @@ import random
 from module import CEModule
 import argparse
 import os
+import json
 
 
 def seed_everything(seed):
@@ -34,41 +35,47 @@ def train(encoder, decoder, args):
 
     # -- dataset, data loader -> 각 part 에 맞는 sketch를 잘라서 받아온다.
 
-    train_loader = DataLoader()
-    val_loader = DataLoader()
+    train_dataset =
+    val_dataset =
 
-    model = decoder(encoder)
+    train_loader = DataLoader(train_dataset)
+    val_loader = DataLoader(val_dataset)
 
     critetrion = nn.MSELoss()
     optimizer = torch.optim.AdamW
     shcheduler = torch.optim.lr_scheduler.CosineAnnealingLR
 
     for epoch in range(200):
-        model.train()
+        encoder.train()
+        decoder.train()
         loss_value = 0
 
         for inputs in train_loader:
             inputs = inputs.to(device)
             optimizer.zero_grad()
-            outs = model(inputs)
+            outs = encoder(inputs)
+            outs = decoder(outs)
 
             loss = critetrion(outs, inputs)
+            optimizer.zero_grad()
             loss.backward()
             optimizer.step()
 
             loss_value += loss.item()
 
-        shcheduler.step(float(loss))
+        shcheduler.step()
 
         with torch.no_grad():
             print("Calculating validation results...")
-            model.eval()
+            encoder.eval()
+            decoder.eval()
             total_loss = 0.0
             cnt = 0
 
             for inputs in val_loader:
                 inputs = inputs.to(device)
-                outs - model(inputs)
+                outs = encoder(inputs)
+                outs = decoder(outs)
                 loss = critetrion(inputs, outs)
                 total_loss += loss
                 cnt += 1
@@ -76,6 +83,10 @@ def train(encoder, decoder, args):
             avrg_loss = total_loss / cnt
             print(
                 f"Validation #{epoch} Average Loss : {round(avrg_loss.item(),4)}")
+            save_model(encoder, saved_dir=args.save_dir,
+                       file_name=f"encoder_{args.part}_latest")
+            save_model(decoder, saved_dir=args.save_dir,
+                       file_name=f"decoder_{args.part}_latest")
 
 
 if __name__ == "__main__":
@@ -84,6 +95,8 @@ if __name__ == "__main__":
                         help="Choose part name to encode")
     parser.add_argument('--seed', type=int, default=21, help="Fixing seed")
     parser.add_argument("--sketch_dir", type=str,
+                        default="None", help="Loactaion of Sketch")
+    parser.add_argument("--save_dir", type=str,
                         default="None", help="Loactaion of Sketch")
 
     part = parser.part
