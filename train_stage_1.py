@@ -7,7 +7,8 @@ import random
 from module import CEModule
 import argparse
 import os
-import json
+from dataset import CustomDataset
+import multiprocessing
 
 
 def seed_everything(seed):
@@ -27,25 +28,33 @@ def save_model(model, saved_dir, file_name):
 
 def train(encoder, decoder, args):
     seed_everything(args.seed)
-    data_dir = args.sketch_dir
 
     # -- settings
     use_cuda = torch.cuda.in_available()
     device = torch.device("cuda" if use_cuda else "cpu")
 
     # -- dataset, data loader -> 각 part 에 맞는 sketch를 잘라서 받아온다.
+    train_dataset = CustomDataset(
+        data_dir=args.sketch_dir, part=args.part, mode="train")
+    val_dataset = CustomDataset(
+        data_dir=args.sketch_dir, part=args.part, mode="val")
 
-    train_dataset =
-    val_dataset =
+    train_loader = DataLoader(train_dataset, batch_size=args.batch_size, num_workers=multiprocessing.cpu_count()//2,
+                              shuffle=True,
+                              pin_memory=use_cuda,
+                              drop_last=True)
 
-    train_loader = DataLoader(train_dataset)
-    val_loader = DataLoader(val_dataset)
+    val_loader = DataLoader(val_dataset, batch_size=args.batch_size, num_workers=multiprocessing.cpu_count()//2,
+                            shuffle=True,
+                            pin_memory=use_cuda,
+                            drop_last=True)
 
+    #--- Loss & optimizer & scheduler
     critetrion = nn.MSELoss()
     optimizer = torch.optim.AdamW
     shcheduler = torch.optim.lr_scheduler.CosineAnnealingLR
 
-    for epoch in range(200):
+    for epoch in range(argparse.epoch):
         encoder.train()
         decoder.train()
         loss_value = 0
@@ -97,7 +106,11 @@ if __name__ == "__main__":
     parser.add_argument("--sketch_dir", type=str,
                         default="None", help="Loactaion of Sketch")
     parser.add_argument("--save_dir", type=str,
-                        default="None", help="Loactaion of Sketch")
+                        default="None", help="Loactaion to save pth")
+    parser.add_argument("--epoch", type=int,
+                        default=200, help="Number of epoch")
+    parser.add_argument("--batch_size", type=int,
+                        default=8, help="Size of batch")
 
     part = parser.part
     args = parser.parse_args()
