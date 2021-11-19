@@ -13,8 +13,8 @@ def define_part_encoder(model='mouth', norm='instance', input_nc=1, latent_dim=5
         image_size = 192
     elif 'nose' in model:
         image_size = 160
-    elif 'face' in model:
-        image_size = 512
+    else:
+        print("Whole Image !!")
 
     # input longsize 256 to 512*4*4
     net_encoder = CE_EncoderGen_Res(
